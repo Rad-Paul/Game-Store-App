@@ -1,0 +1,8 @@
+1.Setup express
+
+2.Setup Prisma
+    Define initial schema
+    Connect to Sql Server db
+    Write initial seed logic
+
+3.

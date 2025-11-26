@@ -1,0 +1,42 @@
+Restructure Model for Games
+    Separate the game info from the Game Model
+    Apply changes to db
+
+Seed db
+    Seed with initial Games
+        Figure out template for saving Release Date of Games
+    Seed with initial Keys
+        Write a Random key generating function
+        Figure out how to save princing for keys in db
+
+Game models improvements
+    Add cover for Games
+    Add trailer link for Games
+
+CRUD operations for Games
+    Write Post endpoint
+    Write Get endpoint
+    Write Get endpoint for a game
+    Write Put endpoint
+    Write Delete endpoint
+
+CRUD operations for Game Keys
+    Write Post endpoint
+    Write Get endpoint
+    Write Get endpoint for a game key
+    Write Put endpoint
+    Write Delete endpoint
+
+CRUD operations for GameGenres
+    Write Post endpoint
+    Write Get endpoint
+    Write Delete endpoint
+
+Add Authentication Service
+    Write User Model
+    Figure out how to add Authentication via JWT
+    Configure JWT
+    Write logic for password hashing
+    Write logic for JWT token generation
+    Create /auth/registration endpoint
+    Create /auth/login endpoint
