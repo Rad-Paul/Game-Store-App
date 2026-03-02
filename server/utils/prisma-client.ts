@@ -1,20 +1,21 @@
-import { PrismaClient } from "@prisma/client";
+import "dotenv/config";                    
+import { PrismaMssql } from "@prisma/adapter-mssql";
+import { PrismaClient } from "../generated/prisma/client.ts";
 
-const globalRef : any = globalThis;
-
-let prisma : PrismaClient | undefined = undefined;
-
-if(globalRef.prisma)
-    prisma = globalRef.prisma;
-else
-    prisma = new PrismaClient();
-
-//if (process.env.NODE_ENV !== "production") globalRef.prisma = prisma;
-
-if(!prisma){
-    console.error('Failed to create prisma client!');
-    process.exitCode = 1;
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL formatting is not defined in the .env file!');
 }
-    
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+const adapter = new PrismaMssql(process.env.DATABASE_URL);
+
+const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter, log: ['query', 'error'] });
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+}
 
 export default prisma;

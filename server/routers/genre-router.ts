@@ -1,26 +1,27 @@
-import { Router, type Response, type Request, type NextFunction } from "express";
+import { Router, type Request, type Response, type NextFunction } from "express";
 import prisma from "../utils/prisma-client.ts";
+import { error } from "console";
 
 const router : Router = Router();
 
 router.get('/', async (req : Request, res : Response, next : NextFunction) => {
-    const games = await prisma?.game.findMany();
+    const genres = await prisma?.genre.findMany();
 
-    res.json(games);
+    res.json(genres);
 });
 
 router.get('/:id', async (req : Request, res : Response, next : NextFunction) => {
-    const game = await prisma?.game.findFirst({
+    const genre = prisma?.genre.findFirst({
         where: {
             id: Number(req.params.id),
         }
-    });
+    })
 
-    if(!game){
-        return res.status(404).json({ error: 'Game not found'});
+    if(!genre){
+        return res.status(404).json({error: 'Genre not found!'});
     }
 
-    res.json(game);
+    res.json(genre);
 });
 
 export default router;
