@@ -18,7 +18,7 @@ model Game {
   Title String @unique 
   Developer String
   Description String?
-  releaseDate DateTime 
+  releaseDate DateTime @db.Date
   registeredAt DateTime @default(now())
   gameGenres GameGenre[]
   keys GameKey[]

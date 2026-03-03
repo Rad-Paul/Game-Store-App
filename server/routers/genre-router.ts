@@ -1,6 +1,5 @@
 import { Router, type Request, type Response, type NextFunction } from "express";
 import prisma from "../utils/prisma-client.ts";
-import { error } from "console";
 
 const router : Router = Router();
 
@@ -11,7 +10,7 @@ router.get('/', async (req : Request, res : Response, next : NextFunction) => {
 });
 
 router.get('/:id', async (req : Request, res : Response, next : NextFunction) => {
-    const genre = prisma?.genre.findFirst({
+    const genre = await prisma?.genre.findFirst({
         where: {
             id: Number(req.params.id),
         }
