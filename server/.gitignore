@@ -3,3 +3,4 @@ node_modules
 help.txt
 dbTest.js
 generated/prisma
+dev

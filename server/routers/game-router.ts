@@ -73,10 +73,11 @@ router.put('/:id', async (req : Request, res : Response, next: NextFunction) => 
     if(!game)
         res.status(404).json({error : 'Game not found'});
 
+    const updateBody : UpdateGameDto = req.body as UpdateGameDto;
     const updateData: any = {};
 
     try{
-        Object.entries(req.body).forEach(([key, value]) => {
+        Object.entries(updateBody).forEach(([key, value]) => {
             if(value){
                 if(key === 'releaseDate'){
                     updateData.releaseDate = new Date(value as string);

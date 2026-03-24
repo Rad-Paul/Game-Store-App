@@ -1,5 +1,4 @@
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
+import prisma from "../utils/prisma-client.ts";
 
 seed();
 
@@ -19,7 +18,6 @@ async function seed() {
         for (const genre of genres){
             await prisma.genre.upsert({
                 where: { 
-                    id: genre.id,
                     title: genre.title
                 },
                 update: {},
