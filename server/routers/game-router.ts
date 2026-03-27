@@ -2,7 +2,6 @@ import { Router, type Response, type Request, type NextFunction } from "express"
 import prisma from "../utils/prisma-client.ts";
 import type { CreateGameDto } from "../models/CreateGameDto.ts";
 import type { UpdateGameDto } from "../models/UpdateGameDto.ts";
-import { error } from "console";
 
 const router : Router = Router();
 

@@ -2,5 +2,6 @@ node_modules
 .env
 help.txt
 dbTest.js
+test.js
 generated/prisma
 dev
