@@ -89,15 +89,20 @@ router.post('/refresh', async (req: Request, res: Response, next: NextFunction) 
 
     if(!refreshToken)
         return res.status(401).json({message: 'No refresh token'})
-
-    try {
+    
         const payload: JwtPayload = verifyRefreshToken(refreshToken);
 
         const storedRefreshToken = await prisma.refreshToken.findUnique({ where: {id: payload.userId}});
-        if(!storedRefreshToken || !await bcrypt.compare(refreshToken, storedRefreshToken.tokenHash))
+        if(!storedRefreshToken)
             return res.status(403).json({ message: 'Invalid refresh token' });
 
-        const newAccessToken = generateAccessToken(payload);
+        if(!await bcrypt.compare(refreshToken, storedRefreshToken.tokenHash))
+            return res.status(403).json({ message: 'Invalid refresh token' });
+
+        if(Date.now() < storedRefreshToken?.expiresAt.getMilliseconds())
+            return res.status(403).json({ message: 'Expired refresh token'})
+
+        const newAccessToken = generateAccessToken({userId: payload.userId, email: payload.email});
 
         res.cookie('accessToken', newAccessToken, {
             httpOnly: true,
@@ -108,10 +113,8 @@ router.post('/refresh', async (req: Request, res: Response, next: NextFunction) 
 
         res.json({message: 'Token refreshed'});
     }
-    catch(error){
-        res.status(403).json({ message: 'Invalid or expired refresh token' });
-    }
-});
+
+);
 
 router.post('/logout', async (req: Request, res: Response, next: NextFunction) => {
     const refreshToken = req.cookies.refreshToken;

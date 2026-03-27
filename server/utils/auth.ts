@@ -40,6 +40,6 @@ export function verifyAccessToken(token: string): JwtPayload {
 
 export function verifyRefreshToken(token: string): JwtPayload {
   const decoded = jwt.verify(token, REFRESH_SECRET as jwt.Secret);
-
+  console.log(decoded);
   return decoded as JwtPayload;
 };

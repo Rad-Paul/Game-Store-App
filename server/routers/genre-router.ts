@@ -4,13 +4,13 @@ import prisma from "../utils/prisma-client.ts";
 const router : Router = Router();
 
 router.get('/', async (req : Request, res : Response, next : NextFunction) => {
-    const genres = await prisma?.genre.findMany();
+    const genres = await prisma.genre.findMany();
 
     res.json(genres);
 });
 
 router.get('/:id', async (req : Request, res : Response, next : NextFunction) => {
-    const genre = await prisma?.genre.findFirst({
+    const genre = await prisma.genre.findFirst({
         where: {
             id: Number(req.params.id),
         }
