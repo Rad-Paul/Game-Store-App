@@ -1,10 +1,9 @@
 import prisma from "../utils/prisma-client.ts";
 import { Router, type Response, type Request, type NextFunction } from "express";
-import { type JwtPayload, generateAccessToken, generateRefreshToken, hashPassword, comparePassword} from "../utils/auth.ts";
+import { type JwtPayload, generateAccessToken, generateRefreshToken, hashPassword, comparePassword, verifyRefreshToken} from "../utils/auth.ts";
 import { type RegisterUserDto } from "../models/RegisterUserDto.ts";
 import type { LoginUserDto } from "../models/LoginUserDto.ts";
 import bcrypt from "bcryptjs";
-import strict from "assert/strict";
 
 const router : Router = Router();
 
@@ -83,6 +82,47 @@ router.post('/login', async (req: Request<{}, {}, LoginUserDto>, res: Response, 
     catch(error){
         res.status(500).json({message: 'Internal server error'});
     }
+});
+
+router.post('/refresh', async (req: Request, res: Response, next: NextFunction) => {
+    const refreshToken = req.cookies.refreshToken;
+
+    if(!refreshToken)
+        return res.status(401).json({message: 'No refresh token'})
+
+    try {
+        const payload: JwtPayload = verifyRefreshToken(refreshToken);
+
+        const storedRefreshToken = await prisma.refreshToken.findUnique({ where: {id: payload.userId}});
+        if(!storedRefreshToken || !await bcrypt.compare(refreshToken, storedRefreshToken.tokenHash))
+            return res.status(403).json({ message: 'Invalid refresh token' });
+
+        const newAccessToken = generateAccessToken(payload);
+
+        res.cookie('accessToken', newAccessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV! === 'production',
+            sameSite: 'strict',
+            maxAge: Number(process.env.ACCESS_TOKEN_EXPIRES_IN!) * 60 * 1000,
+        });
+
+        res.json({message: 'Token refreshed'});
+    }
+    catch(error){
+        res.status(403).json({ message: 'Invalid or expired refresh token' });
+    }
+});
+
+router.post('/logout', async (req: Request, res: Response, next: NextFunction) => {
+    const refreshToken = req.cookies.refreshToken;
+    if(refreshToken){
+        const payload: JwtPayload = verifyRefreshToken(refreshToken);
+        await prisma.refreshToken.deleteMany({where: {id: payload.userId}})
+    }
+
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+    res.json({message: 'Logged out'});
 });
 
 export default router;
