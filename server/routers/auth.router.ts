@@ -53,7 +53,7 @@ router.post('/login', async (req: Request<{}, {}, LoginUserDto>, res: Response, 
 
         const hashedRefreshToken : string = await bcrypt.hash(refreshToken, 12);
         const expirationDate = new Date();
-        expirationDate.setDate(expirationDate.getDay() + Number(process.env.REFRESH_TOKEN_EXPIRES_IN!));
+        expirationDate.setDate(expirationDate.getDate() + Number(process.env.REFRESH_TOKEN_EXPIRES_IN!));
         
         await prisma.refreshToken.create({ data: 
             {
@@ -99,7 +99,7 @@ router.post('/refresh', async (req: Request, res: Response, next: NextFunction) 
         if(!await bcrypt.compare(refreshToken, storedRefreshToken.tokenHash))
             return res.status(403).json({ message: 'Invalid refresh token' });
 
-        if(Date.now() < storedRefreshToken?.expiresAt.getMilliseconds())
+        if(Date.now() > storedRefreshToken?.expiresAt.getMilliseconds())
             return res.status(403).json({ message: 'Expired refresh token'})
 
         const newAccessToken = generateAccessToken({userId: payload.userId, email: payload.email});
