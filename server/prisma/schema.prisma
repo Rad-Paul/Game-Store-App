@@ -61,6 +61,8 @@ model GameGenre {
 
   game Game @relation(fields: [gameId], references: [id])
   genre Genre @relation(fields: [genreId], references: [id])
+
+  //@@unique([gameId, genreId])
 }
 
 model Genre {

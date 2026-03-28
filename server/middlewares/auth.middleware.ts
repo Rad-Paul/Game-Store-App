@@ -2,7 +2,7 @@ import { type Request, type Response, type NextFunction } from 'express';
 import { verifyAccessToken } from '../utils/auth.ts';
 
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
-    const token: string = req.cookies.accessToken;
+    const token: string | undefined = req.cookies?.accessToken;
     if(!token)
         return res.status(401).json({ message: 'Access denied. No token provided.' });
     try {
