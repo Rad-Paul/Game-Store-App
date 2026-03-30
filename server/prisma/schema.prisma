@@ -16,17 +16,79 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime?
   
+  cart Cart?
+  orders Order[]
   refreshTokens RefreshToken[]
 }
 
 model RefreshToken {
   id Int @id @default(autoincrement())
   tokenHash String @unique
-  userId Int
+  userId Int @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
+}
+
+model Cart {
+  id Int @id @default(autoincrement())
+  userId Int @unique
+  updatedAt DateTime @updatedAt
+
+  cartItems CartItem[]
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CartItem {
+  id Int @id @default(autoincrement())
+  cartId Int
+  gameId Int
+  quantity Int @default(1)
+
+  addedAt DateTime @default(now())
+
+  game Game @relation(fields: [gameId], references: [id])
+  cart Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, gameId])
+}
+
+model GameKey {
+  id Int @id @default(autoincrement())
+  key String @unique
+  price Decimal
+  //platform String
+  status String @default("AVAILABLE")
+ 
+  gameId Int
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  orderItemId Int?
+  orderItem OrderItem? @relation(fields: [orderItemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Order {
+  id Int @id @default(autoincrement())
+  userId Int
+  total Decimal
+  status String @default("PENDING")
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  orderItems OrderItem[]
+}
+
+model OrderItem {
+  id Int @id @default(autoincrement())
+  orderId Int
+  gameId Int
+  quantity Int
+  pricePaid Decimal // price at purchase time
+
+  order Order @relation(fields: [orderId], references: [id])
+  game Game @relation(fields: [gameId], references: [id])
+  keys GameKey[]
 }
 
 // store a single active refresh token (simple approach)
@@ -35,23 +97,17 @@ model RefreshToken {
 
 model Game {
   id Int @id @default(autoincrement())
-  Title String @unique 
-  Developer String
-  Description String?
+  title String @unique
+  price Decimal 
+  developer String
+  description String?
   releaseDate DateTime @db.Date
   registeredAt DateTime @default(now())
 
+  cartItems CartItem[]
   gameGenres GameGenre[]
+  orderItems OrderItem[]
   keys GameKey[]
-}
-
-model GameKey {
-  id Int @id @default(autoincrement())
-  key String
-  price Decimal
-  gameId Int
-
-  game Game @relation(fields: [gameId], references: [id])
 }
 
 model GameGenre {
@@ -62,7 +118,7 @@ model GameGenre {
   game Game @relation(fields: [gameId], references: [id])
   genre Genre @relation(fields: [genreId], references: [id])
 
-  //@@unique([gameId, genreId])
+  @@unique([gameId, genreId])
 }
 
 model Genre {
