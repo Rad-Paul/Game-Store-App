@@ -7,6 +7,7 @@ import gameRouter from './routers/game.router.ts';
 import genreRouter from './routers/genre.router.ts';
 import authRouter from './routers/auth.router.ts';
 import gameGenreRouter from './routers/gameGenre.router.ts';
+import cartRouter from './routers/cart.router.ts';
 import { authenticate } from './middlewares/auth.middleware.ts';
 import cookieParser from 'cookie-parser';
 
@@ -19,7 +20,8 @@ app.use(cookieParser());
 app.use('/games', authenticate, gameRouter);
 app.use('/games/:gameId/gameGenres', gameGenreRouter);
 app.use('/genres', authenticate, genreRouter);
-app.use('/auth', authRouter);
+app.use('/auth', authenticate, authRouter);
+app.use('/cart', cartRouter);
 
 app.get('/', (req, res) => {
     res.send('Hello World!');

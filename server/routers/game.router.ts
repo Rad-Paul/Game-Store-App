@@ -31,9 +31,10 @@ router.post('/', async (req : Request<{}, {}, CreateGameDto>, res : Response, ne
     try {
         const newGame = await prisma.game.create({
             data: {
-                Title: gameData.title,
-                Developer: gameData.developer,
-                Description: gameData.description,
+                title: gameData.title,
+                developer: gameData.developer,
+                description: gameData.description,
+                price: gameData.price,
                 releaseDate: new Date(gameData.releaseDate),
             }
         })

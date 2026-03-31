@@ -3,4 +3,5 @@ export interface CreateGameDto {
     developer: string;
     description: string;
     releaseDate: string;
+    price: number;
 }
