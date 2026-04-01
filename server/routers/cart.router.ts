@@ -5,42 +5,101 @@ import type { CreateCartItemDto } from "../models/CreateCartItemDto.ts";
 
 const router: Router = Router();
 
-router.get('/', async (req: Request, res: Response, next: NextFunction) => {
-    if(!(req as any).user)
+const getCart = async (req: Request, res: Response, next: NextFunction) => {
+    if(!req.user)
         return res.status(401).json({message: 'User must be logged in!'});
 
-    const user: JwtPayload = (req as any).user;
-    const cart = await GetOrCreateCart(user.userId);
+    const cart = await GetOrCreateCart(req.user.userId);
 
     res.status(200).json(cart);
+};
 
-});
-
-router.post('/', async (req: Request<CreateCartItemDto>, res: Response, next: NextFunction) => {
-    if(!(req as any).user)
+//add to cart
+const addToCart = async (req: Request<CreateCartItemDto>, res: Response, next: NextFunction) => {
+    if(!req.user)
         return res.status(401).json({message: 'User must be logged in!'});
 
-    const user: JwtPayload = (req as any).user;
+    const user: JwtPayload = req.user;
     const data: CreateCartItemDto = req.body;
-    const cart = GetOrCreateCart(user.userId);
+    const cart = await GetOrCreateCart(user.userId);
 
-});
+    if(!data.gameId)
+        return res.status(400).json({message: 'gameId is required'});
+    
+    const game = await prisma.game.findUnique({
+        where: {id: data.gameId},
+        select: {id: true, price: true}
+    });
+
+    if(!game)
+        return res.status(404).json({ error: 'Game not found' });
+
+    if(!data.quantity)
+        data.quantity = 1;
+
+    try{
+        const result = await prisma.$transaction(async (tx) => {
+        const cartItem = await tx.cartItem.upsert({
+                where: {
+                    cartId_gameId: {
+                        cartId: cart.id,
+                        gameId: data.gameId
+                    }
+                },
+                update: {
+                    quantity: {
+                        increment: data.quantity!
+                    }
+                },
+                create: {
+                    cartId: cart.id,
+                    gameId: data.gameId,
+                    quantity: data.quantity!
+                }
+            });
+
+            return cartItem;
+        });
+
+        res.status(200).json({
+            message: 'Item added to cart',
+            cartItem: result,
+        });
+    }
+    catch(error:any){
+        res.status(500).json({message: 'Internal server error', error: error});
+    }
+};
 
 export async function GetOrCreateCart(userId: number){
-    const cart: any | undefined = prisma.cart.findUnique({where: {userId : userId}, include: {cartItems: true}});
+    const cart: any | undefined = await prisma.cart.findUnique({
+        where: {userId}, 
+        include: {
+            cartItems: {
+                include: {
+                    game: true
+                },
+                orderBy: {
+                    addedAt: 'desc'
+                }
+            }
+        }
+    });
 
     if(!cart){
             const newCart = await prisma.cart.upsert({
-            where: { userId: userId},
+            where: {userId: userId},
             update: {},
-            create: { userId: userId}
+            create: {userId: userId}
         })
-
         return newCart;
     } 
     else {
         return cart;
     }
 }
+
+router.get('/', getCart);
+router.post('/', addToCart);
 
 export default router;
