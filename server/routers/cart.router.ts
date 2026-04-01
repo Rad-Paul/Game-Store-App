@@ -14,7 +14,6 @@ const getCart = async (req: Request, res: Response, next: NextFunction) => {
     res.status(200).json(cart);
 };
 
-//add to cart
 const addToCart = async (req: Request<CreateCartItemDto>, res: Response, next: NextFunction) => {
     if(!req.user)
         return res.status(401).json({message: 'User must be logged in!'});
@@ -33,6 +32,13 @@ const addToCart = async (req: Request<CreateCartItemDto>, res: Response, next: N
 
     if(!game)
         return res.status(404).json({ error: 'Game not found' });
+
+    const keysAvailable = await prisma.gameKey.count({
+        where: {gameId: game.id, status: 'AVAILABLE'}
+    });
+
+    if(keysAvailable < 1)
+        return res.status(400).json({ error: 'Game unavailable' });
 
     if(!data.quantity)
         data.quantity = 1;

@@ -127,3 +127,19 @@ model Genre {
 
   gameGenres GameGenre[]
 }
+
+/*
+enum GameKeyStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+}
+*/
+
+/*
+enum OrderStatus {
+  PENDING
+  PAID
+  COMPLETED
+} 
+*/
