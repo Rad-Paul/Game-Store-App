@@ -1,4 +1,4 @@
-import type { CreateGameGenresDto } from "../validation/zod/ganeGenres.ts";
+import type { CreateGameGenresDto } from "../validation/zod/gameGenres.schemas.ts";
 import prisma from "../utils/prisma-client.ts";
 import { type Request, type Response, type NextFunction, Router } from "express";
 
