@@ -1,8 +1,7 @@
 import prisma from "../utils/prisma-client.ts";
 import { Router, type Response, type Request, type NextFunction } from "express";
 import { type JwtPayload, generateAccessToken, generateRefreshToken, hashPassword, comparePassword, verifyRefreshToken} from "../utils/auth.ts";
-import { type RegisterUserDto } from "../models/RegisterUserDto.ts";
-import type { LoginUserDto } from "../models/LoginUserDto.ts";
+import type { RegisterUserDto, LoginUserDto } from "../validation/zod/auth.schemas.ts";
 import bcrypt from "bcryptjs";
 
 const router : Router = Router();

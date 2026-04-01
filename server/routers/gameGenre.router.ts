@@ -1,4 +1,4 @@
-import type { CreateGameGenresDto } from "../models/CreateGameGenresDto.ts";
+import type { CreateGameGenresDto } from "../validation/zod/ganeGenres.ts";
 import prisma from "../utils/prisma-client.ts";
 import { type Request, type Response, type NextFunction, Router } from "express";
 
@@ -11,7 +11,7 @@ const router: Router = Router();
 
 router.post('/', async (req: Request<Params, {}, CreateGameGenresDto>, res: Response, next: NextFunction) => {
     const gameId = Number(req.params.gameId);
-    const genreNames: string[] = req.body.names;
+    const genreNames: string[] = req.body.titles;
 
     if(isNaN(gameId))
         return res.status(400).json({message: 'Invalid gameId'});

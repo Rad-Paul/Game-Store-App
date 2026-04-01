@@ -1,7 +1,7 @@
 import {type Request, type Response, type NextFunction, Router} from "express";
 import {type JwtPayload} from "../utils/auth.ts";
 import prisma from "../utils/prisma-client.ts";
-import type { CreateCartItemDto } from "../models/CreateCartItemDto.ts";
+import type { CreateCartItemDto } from "../validation/zod/cart.schemas.ts"; 
 
 const router: Router = Router();
 

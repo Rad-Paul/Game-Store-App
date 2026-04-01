@@ -1,9 +1,12 @@
 import { Router, type Response, type Request, type NextFunction } from "express";
 import prisma from "../utils/prisma-client.ts";
-import type { CreateGameDto } from "../models/CreateGameDto.ts";
-import type { UpdateGameDto } from "../models/UpdateGameDto.ts";
+import type { CreateGameDto, UpdateGameDto } from "../validation/zod/game.schemas.ts";
 
 const router : Router = Router();
+
+interface Params {
+    gameId: string;
+}
 
 router.get('/', async (req : Request, res : Response, next : NextFunction) => {
     const games = await prisma?.game.findMany();
@@ -25,8 +28,8 @@ router.get('/:id', async (req : Request, res : Response, next : NextFunction) =>
     res.json(game);
 });
 
-router.post('/', async (req : Request<{}, {}, CreateGameDto>, res : Response, next : NextFunction) => {
-    const gameData = req.body;
+router.post('/', async (req : Request<CreateGameDto>, res : Response, next : NextFunction) => {
+    const gameData: CreateGameDto = req.body;
 
     try {
         const newGame = await prisma.game.create({
@@ -40,9 +43,8 @@ router.post('/', async (req : Request<{}, {}, CreateGameDto>, res : Response, ne
         })
 
         res.status(201).json(newGame);
-    } catch(error: any){
-        console.error(error);
-        res.status(500).json({error: 'Failed to create game'});
+    } catch(error: any){ //handle zod errors
+        res.status(500).json({message: 'Failed to create game', error:error});
     }
 })
 
@@ -62,18 +64,18 @@ router.delete('/:id', async (req : Request, res : Response, next : NextFunction)
     }
 })
 
-router.put('/:id', async (req : Request, res : Response, next: NextFunction) => {
+router.put('/:id', async (req : Request<Params, {}, UpdateGameDto>, res : Response, next: NextFunction) => {
 
     const game : any = await prisma.game.findUnique({
         where: {
-            id: Number(req.params.id),
+            id: Number(req.params.gameId),
         }
     });
 
     if(!game)
         res.status(404).json({error : 'Game not found'});
 
-    const updateBody : UpdateGameDto = req.body as UpdateGameDto;
+    const updateBody: UpdateGameDto = req.body;
     const updateData: any = {};
 
     try{
@@ -89,7 +91,7 @@ router.put('/:id', async (req : Request, res : Response, next: NextFunction) => 
 
         const updatedGame = await prisma.game.update({
             where: {
-                id: Number(req.params.id),
+                id: Number(req.params.gameId),
             },
             data: updateData,
         });
