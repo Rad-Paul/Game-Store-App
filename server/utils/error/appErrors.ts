@@ -33,6 +33,12 @@ export class GameNotFoundError extends AppError {
     }
 }
 
+export class GenreNotFoundError extends AppError {
+    constructor(id: number){
+        super(`Genre with id ${id} not found.`, 404);
+    }
+}
+
 export class BadRequestError extends AppError {
     constructor(target: string, missingProperty: string){
         super(`${target} ${missingProperty} missing.`, 400);
