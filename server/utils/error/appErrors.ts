@@ -32,3 +32,9 @@ export class GameNotFoundError extends AppError {
         super(`Game with id ${id} not found.`, 404);
     }
 }
+
+export class BadRequestError extends AppError {
+    constructor(target: string, missingProperty: string){
+        super(`${target} ${missingProperty} missing.`, 400);
+    }
+}

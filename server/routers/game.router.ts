@@ -1,6 +1,8 @@
 import { Router, type Response, type Request, type NextFunction } from "express";
 import prisma from "../utils/prisma-client.ts";
-import type { CreateGameDto, UpdateGameDto } from "../validation/zod/game.schemas.ts";
+import { createGameAsync, deleteGameByIdAsync, getGameByIdAsync, getGamesAsync, updateGameByIdAsync } from "../services/game.service.ts";
+import type { CreateGameDto, GameDto, UpdateGameDto } from "../validation/zod/game.schemas.ts";
+import { BadRequestError } from "../utils/error/appErrors.ts";
 
 const router : Router = Router();
 
@@ -9,99 +11,53 @@ interface Params {
 }
 
 router.get('/', async (req : Request, res : Response, next : NextFunction) => {
-    const games = await prisma?.game.findMany();
+    const games: GameDto[] = await getGamesAsync();
 
-    res.json(games);
+    res.status(200).json(games);
 });
 
-router.get('/:id', async (req : Request, res : Response, next : NextFunction) => {
-    const game = await prisma?.game.findFirst({
-        where: {
-            id: Number(req.params.id),
-        }
-    });
+router.get('/:id', async (req : Request<Params, {}, {}>, res : Response, next : NextFunction) => {
+    const gameId: number | undefined = Number(req.params.gameId);
 
-    if(!game){
-        return res.status(404).json({ error: 'Game not found'});
-    }
+    if(isNaN(gameId))
+        throw new BadRequestError('Game', 'id');
 
-    res.json(game);
+    const game: GameDto = await getGameByIdAsync(gameId);
+
+    res.status(200).json(game);
 });
 
 router.post('/', async (req : Request<CreateGameDto>, res : Response, next : NextFunction) => {
     const gameData: CreateGameDto = req.body;
 
-    try {
-        const newGame = await prisma.game.create({
-            data: {
-                title: gameData.title,
-                developer: gameData.developer,
-                description: gameData.description ?? null,
-                price: gameData.price,
-                releaseDate: new Date(gameData.releaseDate),
-            }
-        })
+    const game: GameDto = await createGameAsync(gameData);
 
-        res.status(201).json(newGame);
-    } catch(error: any){ //handle zod errors
-        res.status(500).json({message: 'Failed to create game', error:error});
-    }
-})
+    res.status(201).json(game);
+});
 
 router.delete('/:id', async (req : Request, res : Response, next : NextFunction) => {
+    const gameId: number | undefined = Number(req.params.gameId);
 
-    try{
-        const deleteGame = await prisma.game.delete({
-            where: {
-                id: Number(req.params.id),
-            }
-        })
+    if(isNaN(gameId))
+        throw new BadRequestError('Game', 'id');
 
-        res.status(204).json(deleteGame);
-    }
-    catch(error : any){
-        res.status(500).json({error : "Failed to delete game"});
-    }
-})
+    await deleteGameByIdAsync(gameId);
+
+    res.status(204);
+});
 
 router.put('/:id', async (req : Request<Params, {}, UpdateGameDto>, res : Response, next: NextFunction) => {
+    const gameId: number | undefined = Number(req.params.gameId);
 
-    const game : any = await prisma.game.findUnique({
-        where: {
-            id: Number(req.params.gameId),
-        }
-    });
+    if(isNaN(gameId))
+        throw new BadRequestError('Game', 'id');
 
-    if(!game)
-        res.status(404).json({error : 'Game not found'});
+    if(Object.entries(req.body).length === 0)
+        throw new BadRequestError('Update', 'body');
 
-    const updateBody: UpdateGameDto = req.body;
-    const updateData: any = {};
+    const game: GameDto = await updateGameByIdAsync(gameId, req.body);
 
-    try{
-        Object.entries(updateBody).forEach(([key, value]) => {
-            if(value){
-                if(key === 'releaseDate'){
-                    updateData.releaseDate = new Date(value as string);
-                } else{
-                    updateData[key] = value;
-                }
-            }
-        });
-
-        const updatedGame = await prisma.game.update({
-            where: {
-                id: Number(req.params.gameId),
-            },
-            data: updateData,
-        });
-
-        res.status(200).json(updatedGame);
-
-    } catch (error : any) {
-        res.status(500).json({error : 'Failed to update game'})
-    }
-
-})
+    res.status(200).json(game);
+});
 
 export default router;
