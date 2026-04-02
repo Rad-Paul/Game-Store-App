@@ -26,3 +26,9 @@ export class AppZodError extends AppError {
         this.details = details;
     }
 }
+
+export class GameNotFoundError extends AppError {
+    constructor(id: number){
+        super(`Game with id ${id} not found.`, 404);
+    }
+}

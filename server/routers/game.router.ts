@@ -36,7 +36,7 @@ router.post('/', async (req : Request<CreateGameDto>, res : Response, next : Nex
             data: {
                 title: gameData.title,
                 developer: gameData.developer,
-                description: gameData.description,
+                description: gameData.description ?? null,
                 price: gameData.price,
                 releaseDate: new Date(gameData.releaseDate),
             }
