@@ -9,6 +9,7 @@ import authRouter from './routers/auth.router.ts';
 import gameGenreRouter from './routers/gameGenre.router.ts';
 import cartRouter from './routers/cart.router.ts';
 import { authenticate } from './middlewares/auth.middleware.ts';
+import { globalErrorHandler } from './middlewares/error.middleware.ts';
 import cookieParser from 'cookie-parser';
 
 const PORT = process.env.PORT;
@@ -22,6 +23,7 @@ app.use('/games/:gameId/gameGenres', gameGenreRouter);
 app.use('/genres', authenticate, genreRouter);
 app.use('/auth', authenticate, authRouter);
 app.use('/cart', cartRouter);
+app.use(globalErrorHandler);
 
 app.get('/', (req, res) => {
     res.send('Hello World!');
